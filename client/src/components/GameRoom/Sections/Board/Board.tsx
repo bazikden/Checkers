@@ -2,51 +2,64 @@ import React, { useState } from 'react'
 import { Row, Col } from 'antd'
 import { Cell } from '../Cell/Cell'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
+import { Checker, King, IKingMoveResult } from '../../../../utils/Rules';
+import { SideBar } from '../SideBar/SideBar';
 
 export interface IChecker {
     column: string
     row: string
     color: string
+    status: string
+}
+
+interface IContext {
+    moved: string
 }
 
 const rows = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 const columns = [1, 2, 3, 4, 5, 6, 7, 8].map(elem => elem.toString())
 const initialCheckers = [
-    { column: '1', row: 'b', color: 'black' },
-    { column: '1', row: 'd', color: 'black' },
-    { column: '1', row: 'f', color: 'black' },
-    { column: '1', row: 'h', color: 'black' },
-    { column: '2', row: 'a', color: 'black' },
-    { column: '2', row: 'c', color: 'black' },
-    { column: '2', row: 'e', color: 'black' },
-    { column: '2', row: 'g', color: 'black' },
-    { column: '3', row: 'b', color: 'black' },
-    { column: '3', row: 'd', color: 'black' },
-    { column: '3', row: 'f', color: 'black' },
-    { column: '3', row: 'h', color: 'black' },
+    { column: '1', row: 'b', color: 'black', status: "checker" },
+    { column: '1', row: 'd', color: 'black', status: "checker" },
+    { column: '1', row: 'f', color: 'black', status: "checker" },
+    { column: '2', row: 'a', color: 'black', status: "checker" },
+    { column: '1', row: 'h', color: 'black', status: "checker" },
+    { column: '2', row: 'c', color: 'black', status: "checker" },
+    { column: '2', row: 'e', color: 'black', status: "checker" },
+    { column: '2', row: 'g', color: 'black', status: "checker" },
+    { column: '3', row: 'b', color: 'black', status: "checker" },
+    { column: '3', row: 'd', color: 'black', status: "king" },
+    { column: '3', row: 'f', color: 'black', status: "checker" },
+    { column: '3', row: 'h', color: 'black', status: "checker" },
 
-    { column: '6', row: 'a', color: 'white' },
-    { column: '6', row: 'c', color: 'white' },
-    { column: '6', row: 'e', color: 'white' },
-    { column: '6', row: 'g', color: 'white' },
-    { column: '7', row: 'b', color: 'white' },
-    { column: '7', row: 'd', color: 'white' },
-    { column: '7', row: 'f', color: 'white' },
-    { column: '7', row: 'h', color: 'white' },
-    { column: '8', row: 'a', color: 'white' },
-    { column: '8', row: 'c', color: 'white' },
-    { column: '8', row: 'e', color: 'white' },
-    { column: '8', row: 'g', color: 'white' },
+    { column: '6', row: 'a', color: 'white', status: "king" },
+    { column: '6', row: 'c', color: 'white', status: "checker" },
+    { column: '6', row: 'e', color: 'white', status: "king" },
+    { column: '6', row: 'g', color: 'white', status: "checker" },
+    { column: '7', row: 'b', color: 'white', status: "checker" },
+    { column: '7', row: 'd', color: 'white', status: "checker" },
+    { column: '7', row: 'f', color: 'white', status: "checker" },
+    { column: '7', row: 'h', color: 'white', status: "checker" },
+    { column: '8', row: 'a', color: 'white', status: "checker" },
+    { column: '8', row: 'c', color: 'white', status: "checker" },
+    { column: '8', row: 'e', color: 'white', status: "checker" },
+    { column: '8', row: 'g', color: 'white', status: "checker" },
 
 ]
 
-const getListStyle = (isDraggingOver:any) => ({
-    background: isDraggingOver ? "lightblue" : "lightgrey",
+const getListStyle = (isDraggingOver: any) => ({
     width: 100
-  });
+});
+
+export const GlobalContext = React.createContext<IContext>({ moved: "white" })
 
 export const Board = () => {
     const [checkers, setCheckers] = useState<IChecker[]>(initialCheckers)
+    const [moved, setMoved] = useState<string>("white")
+
+    const checkExists = (column: string, row: string) => {
+        return checkers.find((elem: IChecker) => elem.column === column && elem.row === row) === undefined ? false : true
+    }
     let color = "black"
     const mapColumns = ((column: string) => {
         color = color === "black" ? "white" : "black"
@@ -56,16 +69,15 @@ export const Board = () => {
                     rows.map((row: string) => {
                         let cell
                         if (color === "black") {
-                            cell = <Droppable key={column + row} droppableId={column + row}>
+                            cell = <Droppable key={column + row} droppableId={column + row} isDropDisabled={checkExists(column, row)}>
                                 {(provided: any, snapshot: any) => (
                                     <div ref={provided.innerRef}
                                         style={getListStyle(snapshot.isDraggingOver)}
-                                        // style={{ width: '100%', height: '100%', display: "flex", justifyContent: "center", alignItems: 'center' }}
                                         {...provided.droppableProps}>
                                         <Col>
                                             <Cell col={column} row={row} color={color} checkers={checkers} setCheckers={setCheckers} />
                                         </Col>
-                                        {/* {provided.placeholder} */}
+
                                     </div>
                                 )}
 
@@ -86,24 +98,99 @@ export const Board = () => {
     })
 
     const onDragEnd = (result: any) => {
-        const draggable = result.draggableId.split("-")
-        const destination = result.destination.droppableId.split("")
-        const newState = checkers.map((elem:IChecker) => {
-            if(elem.column === draggable[0] && elem.row === draggable[1] && elem.color === draggable[2]){
-                return {column:destination[0],row:destination[1],color:draggable[2]}
+        const { destination, source, draggableId } = result
+        if (destination === null) { return }
+        const from = source.droppableId
+        const to = destination.droppableId
+        const color = draggableId.split('-')[2]
+        const options = {
+            checkers,
+            from,
+            to,
+            color
+        }
+        const draggable = draggableId.split("-")
+        const destinationArr = destination.droppableId.split("")
+        const draggableElem = checkers.find((elem: IChecker) => elem.column === draggable[0] && elem.row === draggable[1] && elem.color === draggable[2])
+        const checkerMove = new Checker(options)
+        const kingMove = new King(options)
+
+
+        if (draggableElem?.status === "checker") {
+            const move = checkerMove.makeMove()
+            if (move === false) {
+                return
+            } else {
+                const findChecker = checkers.find((elem: IChecker) => elem.column === destinationArr[0] && elem.row === destinationArr[1])
+                if (findChecker !== undefined) { return }
+                let newState = checkers.map((elem: IChecker) => {
+                    if (elem.column === draggable[0] && elem.row === draggable[1] && elem.color === draggable[2]) {
+                        if (checkerMove.checkMakeKing()) {
+                            return { column: destinationArr[0], row: destinationArr[1], color: draggable[2], status: "king" }
+                        } else {
+                            return { column: destinationArr[0], row: destinationArr[1], color: draggable[2], status: elem.status }
+
+                        }
+                    }
+                    return elem
+                })
+                if (move !== true) {
+                    newState = newState.filter((checker: IChecker) => checker !== move)
+                    const newOptions = { ...options, checkers: newState }
+                    const nextMove = new Checker(newOptions)
+                    const existedEnemy = nextMove.checkPosibleEnemy()
+                    !existedEnemy && setMoved((prevState: string) => prevState === "white" ? "black" : "white")
+                } else {
+                    setMoved((prevState: string) => prevState === "white" ? "black" : "white")
+                }
+                setCheckers(newState)
             }
-            return elem
-        })
-        setCheckers(newState)
+        } else {
+            const kingMoveResult: IKingMoveResult = kingMove.makeKingMove()
+            if (kingMoveResult.move === true) {
+                let newState = checkers.map((elem: IChecker) => {
+                    if (elem.column === draggable[0] && elem.row === draggable[1] && elem.color === draggable[2]) {
+                        return { column: destinationArr[0], row: destinationArr[1], color: draggable[2], status: elem.status }
+                    }
+                    return elem
+                })
+                if(kingMoveResult.enemy !== undefined){
+                    newState = newState.filter((elem:IChecker) =>elem !== kingMoveResult.enemy)
+                }
+                setCheckers(newState)
+                if(kingMoveResult.nextMove === false){setMoved((prevState: string) => prevState === "white" ? "black" : "white")}
+            }
+
+        }
     }
 
+
     return (
-        <DragDropContext onDragEnd={onDragEnd}>
-            <div style={{ maxWidth: '802px', border: '1px solid black', boxSizing: 'border-box', margin: '100px auto' }}>
-                {
-                    columns.map(mapColumns)
-                }
-            </div>
-        </DragDropContext>
+        <GlobalContext.Provider value={{ moved }}>
+            <DragDropContext onDragEnd={onDragEnd}>
+                <div className="mx-auto d-flex justify-content-center">
+                    <div className="d-flex flex-column justify-content-between h-100 mx-2">
+                        {
+                            columns.map((number: string) => (<div className="d-flex align-items-center " style={{ height: '100px' }} key={'row' + number}>{number}</div>))
+                        }
+                    </div>
+                    <div>
+                        <div style={{ maxWidth: '802px', border: '1px solid black', boxSizing: 'border-box', margin: '0 auto ' }}>
+                            {
+                                columns.map(mapColumns)
+                            }
+                        </div>
+                        <div style={{ maxWidth: '802px', margin: '0 auto', display: "flex" }} >
+                            {
+                                rows.map((row: string) => (
+                                    <div key={row + Date.now()} style={{ width: "300px", textAlign: "center" }}>{row}</div>
+                                ))
+                            }
+                        </div>
+                    </div>
+                    <SideBar moved={moved} setMoved={setMoved} checkers={checkers} />
+                </div>
+            </DragDropContext>
+        </GlobalContext.Provider>
     )
 }

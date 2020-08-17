@@ -1,20 +1,18 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { IChecker } from '../Board/Board'
 import { Draggable } from 'react-beautiful-dnd'
+import {GlobalContext} from '../Board/Board'
+import crown from '../../../../images/crown.png'
 
 
 const getItemStyle = (isDragging:any, draggableStyle:any) => ({
-    // some basic styles to make the items look a bit nicer
+   
     userSelect: "none",
     width:"100%",
-    height:"100%",
+    height:"100px",
     display:'flex',
     justifyContent:"center",
     alignItems:"center",
-    // change background colour if dragging
-    // background: isDragging ? "lightgreen" : "grey",
-  
-    // styles we need to apply on draggables
     ...draggableStyle
   });
 
@@ -46,6 +44,7 @@ const styles = {
         borderRadius: "50%",
         background: "black",
         border: '3px solid white',
+        overflow:"hidden"
     },
     checkerWhiteRound: {
         width: '70%',
@@ -53,15 +52,18 @@ const styles = {
         borderRadius: "50%",
         background: "white",
         border: '3px solid black',
+        overflow:"hidden"
     },
 }
 
-export const Checker = ({ column, row, color }: IChecker) => {
+export const Checker = ({ column, row, color, status}: IChecker) => {
+    const {moved} = useContext(GlobalContext)
     return (
         <Draggable
             key={column+row+color}
             draggableId={`${column}-${row}-${color}`}
             index={0}
+            isDragDisabled={moved !== color?true:false}
         >
             {(provided, snapshot) => (
                 <div
@@ -72,10 +74,23 @@ export const Checker = ({ column, row, color }: IChecker) => {
                     snapshot.isDragging,
                     provided.draggableProps.style
                     )}
-                >
+                > 
+                {
+                    status === "checker"?
+                    (
                     <div style={color === "black" ? styles.checkerBlack : styles.checkerWhite}>
                         <div style={color === "black" ? styles.checkerBlackRound : styles.checkerWhiteRound}></div>
                     </div>
+                    )
+                    :
+                    (
+                    <div style={color === "black" ? styles.checkerBlack : styles.checkerWhite}>
+                        <div style={color === "black" ? styles.checkerBlackRound : styles.checkerWhiteRound}>
+                            <img className="w-100 h-100" src={crown} alt="crown"/>
+                        </div>
+                    </div>
+                    )
+                }
                 </div>
             )}
     </Draggable>

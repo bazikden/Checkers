@@ -52,7 +52,7 @@ export const Home = ({activeUser,setActiveUser}:IProps) => {
               )
             }
             {
-              activeUser.room.id .length > 0 && activeUser.player.id.length > 0 && (
+              activeUser.room.id.length > 0 && activeUser.player.id.length > 0 && (
                 <Button onClick={onPlayBtnClick}>Play game</Button>
               )
             }
