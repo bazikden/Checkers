@@ -15,7 +15,10 @@
     "@types/react-dom": "^16.9.8",
     "@types/react-router": "^5.1.8",
     "@types/react-router-dom": "^5.1.5",
+    "@types/socket.io": "^2.1.11",
+    "@types/socket.io-client": "^1.4.33",
     "antd": "^4.5.4",
+    "axios": "^0.19.2",
     "bootstrap": "^4.5.2",
     "react": "^16.13.1",
     "react-beautiful-dnd": "^13.0.0",
@@ -23,6 +26,7 @@
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3",
+    "socket.io-client": "^2.3.0",
     "typescript": "^3.9.7",
     "uuidv4": "^6.2.2"
   },
@@ -35,6 +39,7 @@
   "eslintConfig": {
     "extends": "react-app"
   },
+  "proxy": "http://localhost:5000",
   "browserslist": {
     "production": [
       ">0.2%",
@@ -46,5 +51,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.0"
   }
 }

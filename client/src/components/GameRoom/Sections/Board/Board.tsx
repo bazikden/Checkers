@@ -4,6 +4,9 @@ import { Cell } from '../Cell/Cell'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import { Checker, King, IKingMoveResult } from '../../../../utils/Rules';
 import { SideBar } from '../SideBar/SideBar';
+import useGame from "../../useGame"
+import { useParams } from 'react-router';
+import { IActiveUser } from '../../../Home/Home';
 
 export interface IChecker {
     column: string
@@ -13,11 +16,15 @@ export interface IChecker {
 }
 
 interface IContext {
-    moved: string
+    moved: string,
+    setMoved: Function
 }
+
+const NEW_GAME_MOVE = "NEW_GAME_MOVE";
 
 const rows = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 const columns = [1, 2, 3, 4, 5, 6, 7, 8].map(elem => elem.toString())
+
 const initialCheckers = [
     { column: '1', row: 'b', color: 'black', status: "checker" },
     { column: '1', row: 'd', color: 'black', status: "checker" },
@@ -31,7 +38,7 @@ const initialCheckers = [
     { column: '3', row: 'd', color: 'black', status: "king" },
     { column: '3', row: 'f', color: 'black', status: "checker" },
     { column: '3', row: 'h', color: 'black', status: "checker" },
-
+  
     { column: '6', row: 'a', color: 'white', status: "king" },
     { column: '6', row: 'c', color: 'white', status: "checker" },
     { column: '6', row: 'e', color: 'white', status: "king" },
@@ -44,18 +51,24 @@ const initialCheckers = [
     { column: '8', row: 'c', color: 'white', status: "checker" },
     { column: '8', row: 'e', color: 'white', status: "checker" },
     { column: '8', row: 'g', color: 'white', status: "checker" },
-
-]
+  
+  ]
 
 const getListStyle = (isDraggingOver: any) => ({
     width: 100
 });
 
-export const GlobalContext = React.createContext<IContext>({ moved: "white" })
+export const GlobalContext = React.createContext<IContext>({ moved: "white", setMoved:() =>{} })
+interface IProps {
+    activeUser:IActiveUser
+    setActiveUser:Function
+}
 
-export const Board = () => {
-    const [checkers, setCheckers] = useState<IChecker[]>(initialCheckers)
+export const Board = ({activeUser,setActiveUser}:IProps) => {
+    const params:{id:string} = useParams()
+    const [checkers,setCheckers] = useState(initialCheckers)
     const [moved, setMoved] = useState<string>("white")
+    const {makeMove,nextPlayer} = useGame(params.id,setCheckers,setMoved,activeUser,setActiveUser)
 
     const checkExists = (column: string, row: string) => {
         return checkers.find((elem: IChecker) => elem.column === column && elem.row === row) === undefined ? false : true
@@ -75,7 +88,7 @@ export const Board = () => {
                                         style={getListStyle(snapshot.isDraggingOver)}
                                         {...provided.droppableProps}>
                                         <Col>
-                                            <Cell col={column} row={row} color={color} checkers={checkers} setCheckers={setCheckers} />
+                                            <Cell col={column} row={row} color={color} checkers={checkers} />
                                         </Col>
 
                                     </div>
@@ -84,7 +97,7 @@ export const Board = () => {
                             </Droppable>
                         } else {
                             cell = <Col key={column + row}>
-                                <Cell col={column} row={row} color={color} checkers={checkers} setCheckers={setCheckers} />
+                                <Cell col={column} row={row} color={color} checkers={checkers}  />
                             </Col>
 
                         }
@@ -97,7 +110,7 @@ export const Board = () => {
         )
     })
 
-    const onDragEnd = (result: any) => {
+    const onDragEnd = async(result: any) => {
         const { destination, source, draggableId } = result
         if (destination === null) { return }
         const from = source.droppableId
@@ -139,10 +152,11 @@ export const Board = () => {
                     const newOptions = { ...options, checkers: newState }
                     const nextMove = new Checker(newOptions)
                     const existedEnemy = nextMove.checkPosibleEnemy()
-                    !existedEnemy && setMoved((prevState: string) => prevState === "white" ? "black" : "white")
+                    !existedEnemy && nextPlayer()
                 } else {
-                    setMoved((prevState: string) => prevState === "white" ? "black" : "white")
+                   nextPlayer()
                 }
+                await makeMove(NEW_GAME_MOVE,newState)
                 setCheckers(newState)
             }
         } else {
@@ -157,16 +171,17 @@ export const Board = () => {
                 if(kingMoveResult.enemy !== undefined){
                     newState = newState.filter((elem:IChecker) =>elem !== kingMoveResult.enemy)
                 }
+                makeMove(NEW_GAME_MOVE,newState)
                 setCheckers(newState)
-                if(kingMoveResult.nextMove === false){setMoved((prevState: string) => prevState === "white" ? "black" : "white")}
+                if(kingMoveResult.nextMove === false){nextPlayer()}
             }
 
         }
     }
 
-
+    console.log(activeUser)
     return (
-        <GlobalContext.Provider value={{ moved }}>
+        <GlobalContext.Provider value={{ moved,setMoved }}>
             <DragDropContext onDragEnd={onDragEnd}>
                 <div className="mx-auto d-flex justify-content-center">
                     <div className="d-flex flex-column justify-content-between h-100 mx-2">

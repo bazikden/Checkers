@@ -7,12 +7,11 @@ interface ICell {
     col: string,
     color: string,
     checkers:IChecker[],
-    setCheckers: Function,
 }
 
 
 
-export const Cell = ({ row, col, color, checkers, setCheckers }: ICell) => {
+export const Cell = ({ row, col, color, checkers }: ICell) => {
     const renderChecker = () => {
         if(color === "black"){
             const checker:IChecker = checkers.find((elem:IChecker) => elem.column === col && elem.row === row)!

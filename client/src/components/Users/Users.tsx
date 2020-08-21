@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { uuid } from 'uuidv4'
+import { v4 as uuidv4 } from 'uuid'
 export interface IUser {
     name: string,
     id: string,
@@ -11,20 +11,17 @@ interface IProps {
 }
 
 const initialUsers: IUser[] = [
-    { name: 'Player 1', id: uuid(), active: false },
-    { name: 'Player 2', id: uuid(), active: false },
-    { name: 'Player 3', id: uuid(), active: false },
-    { name: 'Player 4', id: uuid(), active: false },
-    { name: 'Player 5', id: uuid(), active: false },
-    { name: 'Player 6', id: uuid(), active: false },
+    { name: 'Player 1', id: uuidv4(), active: false },
+    { name: 'Player 2', id: uuidv4(), active: false },
+    { name: 'Player 3', id: uuidv4(), active: false },
+    { name: 'Player 4', id: uuidv4(), active: false },
+    { name: 'Player 5', id: uuidv4(), active: false },
+    { name: 'Player 6', id: uuidv4(), active: false },
 ]
 
 
 export const Users = ({ setActiveUser }: IProps) => {
     const [users, setUsers] = useState(initialUsers)
-
-
-
 
     const onUserClick = (user: IUser) => {
         setUsers(users.map((elem:IUser)=>{

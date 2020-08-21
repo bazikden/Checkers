@@ -4,6 +4,7 @@ import { useHistory } from 'react-router';
 
 import { Users, IUser } from '../Users/Users';
 import { Rooms, IRoom } from '../Rooms/Rooms';
+import { RoomsApi } from '../api/roomsApi';
 export interface IActiveUser {
     player: IUser,
     room: IRoom
@@ -18,8 +19,12 @@ interface IProps {
 export const Home = ({activeUser,setActiveUser}:IProps) => {
     const history = useHistory();
 
-    const onPlayBtnClick = () => {
-        history.push(`/room/${activeUser.room.id}`)
+    const onPlayBtnClick = async() => {
+      console.log(activeUser)
+      const response = await RoomsApi.addRoom(0,activeUser.player.name,activeUser.room._id)
+      console.log(response)
+      setActiveUser((prevState:IActiveUser) => {return {...prevState,room:response}})
+      history.push(`/room/${response._id}`)
     }
     return (
         <>
@@ -30,13 +35,16 @@ export const Home = ({activeUser,setActiveUser}:IProps) => {
             <Users setActiveUser={setActiveUser} />
           </Col>
           <Col span={12}>
-            <Rooms setActiveUser={setActiveUser} />
+            <Rooms activeUser={activeUser} setActiveUser={setActiveUser} />
           </Col>
         </Row>
         <Row>
+          {
+            Object.keys(activeUser).length > 0 && (
+
           <div className="d-flex w-100 justify-content-center my-5">
             {
-              activeUser.player.id.length > 0 && (
+              activeUser.player  && (
                 <div className="d-flex border border-dark rounded p-3 m-2 user-item">
                   {activeUser.player.name}
                 </div>
@@ -45,18 +53,20 @@ export const Home = ({activeUser,setActiveUser}:IProps) => {
             }
 
             {
-              activeUser.room.id.length > 0 && (
+              activeUser.room && (
                 <div className="d-flex border border-dark rounded p-3 m-2 room-item">
                 {activeUser.room.name}
               </div>
               )
             }
             {
-              activeUser.room.id.length > 0 && activeUser.player.id.length > 0 && (
+              activeUser.room  && activeUser.player && (
                 <Button onClick={onPlayBtnClick}>Play game</Button>
               )
             }
           </div>
+            )
+          }
         </Row>
       </Layout>   
         </>

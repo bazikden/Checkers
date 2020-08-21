@@ -9,16 +9,13 @@ import { GameRoom } from './components/GameRoom/GameRoom';
 
 
 function App() {
-  const [activeUser, setActiveUser] = useState<IActiveUser>({
-    player: { name: "", id: "", active: false },
-    room: { name: "", id: "", active: false }
-  })
+  const [activeUser, setActiveUser] = useState<any>({})
 
   return (
     <Layout>
       <AppHeader />
       <Route exact path='/' render={() => <Home activeUser={activeUser} setActiveUser={setActiveUser}/>}/>
-      <Route path='/room/:id' render={() => <GameRoom activeUser={activeUser}/>}/>
+      <Route path='/room/:id' render={() => <GameRoom activeUser={activeUser}  setActiveUser={setActiveUser}/>}/>
     </Layout>
   );
 }

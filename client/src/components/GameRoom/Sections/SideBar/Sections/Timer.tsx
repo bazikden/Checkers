@@ -30,11 +30,8 @@ export const Timer = ({ moved, setMoved }: IProps) => {
                     }
                 })
             }, 1000)
-            const syncClear = async(interval:any) => {
-                await clearInterval(interval)
-                return 
-            }
-            return () => syncClear(timerInterval)
+
+            return () => clearInterval(timerInterval)
 
 
     }, [])
