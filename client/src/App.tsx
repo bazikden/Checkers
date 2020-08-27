@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './App.css';
 import { Layout } from 'antd'
 import { AppHeader } from './components/AppHeader/AppHeader';
-import {IActiveUser, Home} from './components/Home/Home'
+import { Home} from './components/Home/Home'
 import { Route } from 'react-router';
 import { GameRoom } from './components/GameRoom/GameRoom';
 

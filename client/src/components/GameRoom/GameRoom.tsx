@@ -11,10 +11,8 @@ interface IProps {
 export const GameRoom = ({activeUser,setActiveUser}:IProps) => {
     const history  =  useHistory()
     useEffect(() => {
-        console.log( Object.keys(activeUser).length)
         Object.keys(activeUser).length === 0 && history.push('/')
-    },[])
-    console.log(activeUser)
+    },[activeUser,history])
     return (
         <div>
             {activeUser.player !== undefined && activeUser.player.name? activeUser.player.name :"PLAYER"}

@@ -46,4 +46,15 @@ const getRoom = async (req: express.Request, res: express.Response) => {
     }
 }
 
-export { getRooms, addRoom, getRoom }
+const refreshRoom = async (req: express.Request, res: express.Response) => {
+    const { name } = req.body
+    try {
+        await Room.findOneAndUpdate({ name }, { player1: "none", player2: "none", isbuzy: false })
+        res.json({ success: true })
+
+    } catch (error) {
+        res.status(500).json({ error })
+    }
+}
+
+export { getRooms, addRoom, getRoom, refreshRoom }

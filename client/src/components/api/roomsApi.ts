@@ -1,4 +1,3 @@
-import { Rooms } from './../Rooms/Rooms';
 import axios, { AxiosResponse } from "axios"
 
 const api = axios.create({
@@ -30,6 +29,17 @@ class RoomsApi {
     static async getRoom(roomId:string ) {
         try {
             const response: AxiosResponse = await api.get(`/${roomId}`)
+            return response.data.room
+        } catch (error) {
+            console.log(error.data)
+            return error.data
+        }
+    }
+
+    static async refreshRooms(name:string){
+        try {
+            const data = {name}
+            const response: AxiosResponse = await api.put(`/`,data)
             return response.data.room
         } catch (error) {
             console.log(error.data)

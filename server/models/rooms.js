@@ -25,9 +25,15 @@ var RoomSchema = new mongoose_1.Schema({
     player1: { type: String, default: "none" },
     player2: { type: String, default: "none" },
     isbuzy: { type: Boolean, default: false }
-}, { timestamps: true });
-RoomSchema.pre('update', function (next) {
-    console.log("PreUpdate", this);
-    next();
+}, { timestamps: true, toJSON: { virtuals: true } });
+RoomSchema.virtual('playersCount').get(function () {
+    var count = 0;
+    if (this.player1 !== 'none') {
+        count += 1;
+    }
+    if (this.player2 !== 'none') {
+        count += 1;
+    }
+    return count;
 });
 exports.default = mongoose_1.default.model('Room', RoomSchema);

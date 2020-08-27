@@ -1,39 +1,27 @@
-import React, { useState } from 'react'
-import { v4 as uuidv4 } from 'uuid'
-export interface IUser {
-    name: string,
-    id: string,
-    active: boolean
-}
+import React from 'react'
+import {IUser} from '../api/useSocket'
 
 interface IProps {
-    setActiveUser: Function
+    setActiveUser: Function,
+    choosePlayer:Function,
+    users:IUser[]
 }
 
-const initialUsers: IUser[] = [
-    { name: 'Player 1', id: uuidv4(), active: false },
-    { name: 'Player 2', id: uuidv4(), active: false },
-    { name: 'Player 3', id: uuidv4(), active: false },
-    { name: 'Player 4', id: uuidv4(), active: false },
-    { name: 'Player 5', id: uuidv4(), active: false },
-    { name: 'Player 6', id: uuidv4(), active: false },
-]
 
 
-export const Users = ({ setActiveUser }: IProps) => {
-    const [users, setUsers] = useState(initialUsers)
+
+export const Users = ({ setActiveUser, choosePlayer,users }: IProps) => {
+
 
     const onUserClick = (user: IUser) => {
-        setUsers(users.map((elem:IUser)=>{
-            if(elem === user){elem.active = !elem.active} 
-            return elem
-        }))
-        setActiveUser((prevState:any) => {
+
+        setActiveUser((prevState: any) => {
             return {
                 ...prevState,
-                player:user
+                player: user
             }
         })
+        choosePlayer(user)
     }
 
 

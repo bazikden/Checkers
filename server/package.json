@@ -4,7 +4,7 @@
   "description": "Checkers Game",
   "main": "index.js",
   "scripts": {
-    "tsc": "tsc",
+    "tsc": "tsc -w ",
     "dev": "nodemon index"
   },
   "author": "Denis Bazilevskiy",

@@ -21,6 +21,7 @@ export const Cell = ({ row, col, color, checkers }: ICell) => {
                             row={checker.row}
                             color={checker.color}
                             status ={checkers.find((elem:IChecker) => elem.column === checker.column && elem.row === checker.row)!.status}
+
                             />
             }
 

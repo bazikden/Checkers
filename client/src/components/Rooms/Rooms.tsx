@@ -1,63 +1,44 @@
-import React, { useState, useEffect } from 'react'
-import { uuid } from 'uuidv4'
+import React from 'react'
 import { RoomsApi } from '../api/roomsApi'
 import { IActiveUser } from '../Home/Home'
+import {IRoom} from "../api/useSocket"
 
-export interface IRoom {
-    _id:string,
-    name: string,
-    id: string,
-    isbuzy: boolean,
-    player1:string
-}
 
 interface IProps {
     setActiveUser: Function
     activeUser: IActiveUser
+    chooseRoom: Function
+    rooms:IRoom[]
 }
 
-const initialRooms: IRoom[] = []
 
-export const Rooms = ({ activeUser,setActiveUser }: IProps) => {
-    const [rooms, setRooms] = useState(initialRooms)
+export const Rooms = ({ activeUser, setActiveUser, chooseRoom ,rooms }: IProps) => {
 
-    useEffect(() => {
-        const getRooms = async () => {
-            const response = await RoomsApi.getRooms()
-            setRooms(response)
-        }
-        getRooms()
-    }, [])
 
     const onRoomClick = (room: IRoom) => {
-        setRooms(rooms.map((elem: IRoom) => {
-            if (elem === room) { elem.isbuzy = !elem.isbuzy }
-            return elem
-        }))
         setActiveUser((prevState: any) => {
             return {
                 ...prevState,
                 room: room
             }
         })
+        chooseRoom(room)
     }
 
     const mapRooms = (room: IRoom) => {
-        let playersCount = 0
-        if(room.player1 !== 'none'){
-            playersCount += 1
-        }
         if (room.isbuzy === false) return (
-            <div onClick={() => onRoomClick(room)} style={{ cursor: "pointer", width: '500px' }} key={room._id} className="d-flex justify-content-between border border-dark rounded p-3 m-2 room-item">
+            <div key={room._id} className="position-relative m-2 rounded">
+                <div style ={{display: room.playersCount >=2 || (activeUser.room === room) ? "block":"none", background:"#141414", opacity:0.5}} className="position-absolute w-100 h-100"></div>
+            <div onClick={() => onRoomClick(room)} style={{ cursor: "pointer", width: '100%' }}  className="d-flex justify-content-between border border-dark  p-3  room-item">
                 {room.name}
-            <div>{playersCount} of 2</div>
+                <div>{room.playersCount} of 2</div>
+            </div>
             </div>
         )
     }
 
     const onAddRoomClick = async () => {
-        const response = await RoomsApi.addRoom(rooms.length,activeUser.player.name)
-        setRooms((prevState: IRoom[]) => { return [ ...prevState, response ] })
+        const response = await RoomsApi.addRoom(rooms.length, activeUser.player.name)
 
     }
 
@@ -67,8 +48,8 @@ export const Rooms = ({ activeUser,setActiveUser }: IProps) => {
                 rooms.length === 0 ?
                     (<div className="m-5 p-5">
                         <h3>There no rooms</h3>
-                        {activeUser.player &&  <button onClick={onAddRoomClick} className="btn btn-primary d-block mx-auto">Add new Room</button> }
-                       
+                        {activeUser.player && <button onClick={onAddRoomClick} className="btn btn-primary d-block mx-auto">Add new Room</button>}
+
                     </div>)
                     :
                     rooms.map(mapRooms)

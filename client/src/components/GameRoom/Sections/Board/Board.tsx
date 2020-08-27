@@ -1,12 +1,14 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Row, Col } from 'antd'
 import { Cell } from '../Cell/Cell'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import { Checker, King, IKingMoveResult } from '../../../../utils/Rules';
 import { SideBar } from '../SideBar/SideBar';
 import useGame from "../../useGame"
-import { useParams } from 'react-router';
+import { useParams, useHistory } from 'react-router';
 import { IActiveUser } from '../../../Home/Home';
+import { Modal } from 'antd';
+import { RoomsApi } from '../../../api/roomsApi';
 
 export interface IChecker {
     column: string
@@ -17,7 +19,8 @@ export interface IChecker {
 
 interface IContext {
     moved: string,
-    setMoved: Function
+    setMoved: Function,
+    activeUser: any
 }
 
 const NEW_GAME_MOVE = "NEW_GAME_MOVE";
@@ -35,13 +38,13 @@ const initialCheckers = [
     { column: '2', row: 'e', color: 'black', status: "checker" },
     { column: '2', row: 'g', color: 'black', status: "checker" },
     { column: '3', row: 'b', color: 'black', status: "checker" },
-    { column: '3', row: 'd', color: 'black', status: "king" },
+    { column: '3', row: 'd', color: 'black', status: "checker" },
     { column: '3', row: 'f', color: 'black', status: "checker" },
     { column: '3', row: 'h', color: 'black', status: "checker" },
-  
-    { column: '6', row: 'a', color: 'white', status: "king" },
+
+    { column: '6', row: 'a', color: 'white', status: "checker" },
     { column: '6', row: 'c', color: 'white', status: "checker" },
-    { column: '6', row: 'e', color: 'white', status: "king" },
+    { column: '6', row: 'e', color: 'white', status: "checker" },
     { column: '6', row: 'g', color: 'white', status: "checker" },
     { column: '7', row: 'b', color: 'white', status: "checker" },
     { column: '7', row: 'd', color: 'white', status: "checker" },
@@ -51,24 +54,36 @@ const initialCheckers = [
     { column: '8', row: 'c', color: 'white', status: "checker" },
     { column: '8', row: 'e', color: 'white', status: "checker" },
     { column: '8', row: 'g', color: 'white', status: "checker" },
-  
-  ]
+
+]
 
 const getListStyle = (isDraggingOver: any) => ({
     width: 100
 });
 
-export const GlobalContext = React.createContext<IContext>({ moved: "white", setMoved:() =>{} })
+export const GlobalContext = React.createContext<IContext>({ moved: "white", setMoved: () => { }, activeUser: null })
 interface IProps {
-    activeUser:IActiveUser
-    setActiveUser:Function
+    activeUser: IActiveUser
+    setActiveUser: Function
 }
 
-export const Board = ({activeUser,setActiveUser}:IProps) => {
-    const params:{id:string} = useParams()
-    const [checkers,setCheckers] = useState(initialCheckers)
+export const Board = ({ activeUser, setActiveUser }: IProps) => {
+    const history = useHistory()
+    const params: { id: string } = useParams()
+    const [checkers, setCheckers] = useState(initialCheckers)
+    const [visible, setVisible] = useState(false)
     const [moved, setMoved] = useState<string>("white")
-    const {makeMove,nextPlayer} = useGame(params.id,setCheckers,setMoved,activeUser,setActiveUser)
+    const { makeMove, nextPlayer } = useGame(params.id, setCheckers, setMoved, activeUser, setActiveUser)
+
+
+    useEffect(() => {
+        if (checkers.filter((checker: IChecker) => checker.color === "white").length === 0) setVisible(true)
+        if (checkers.filter((checker: IChecker) => checker.color === "black").length === 0) setVisible(true)
+    }, [checkers])
+    useEffect(()=>{
+        console.log("Active user",activeUser)
+        // activeUser == {} && history.push('/')
+    },[])
 
     const checkExists = (column: string, row: string) => {
         return checkers.find((elem: IChecker) => elem.column === column && elem.row === row) === undefined ? false : true
@@ -97,7 +112,7 @@ export const Board = ({activeUser,setActiveUser}:IProps) => {
                             </Droppable>
                         } else {
                             cell = <Col key={column + row}>
-                                <Cell col={column} row={row} color={color} checkers={checkers}  />
+                                <Cell col={column} row={row} color={color} checkers={checkers} />
                             </Col>
 
                         }
@@ -110,7 +125,7 @@ export const Board = ({activeUser,setActiveUser}:IProps) => {
         )
     })
 
-    const onDragEnd = async(result: any) => {
+    const onDragEnd = async (result: any) => {
         const { destination, source, draggableId } = result
         if (destination === null) { return }
         const from = source.droppableId
@@ -154,9 +169,9 @@ export const Board = ({activeUser,setActiveUser}:IProps) => {
                     const existedEnemy = nextMove.checkPosibleEnemy()
                     !existedEnemy && nextPlayer()
                 } else {
-                   nextPlayer()
+                    nextPlayer()
                 }
-                await makeMove(NEW_GAME_MOVE,newState)
+                await makeMove(NEW_GAME_MOVE, newState)
                 setCheckers(newState)
             }
         } else {
@@ -168,44 +183,70 @@ export const Board = ({activeUser,setActiveUser}:IProps) => {
                     }
                     return elem
                 })
-                if(kingMoveResult.enemy !== undefined){
-                    newState = newState.filter((elem:IChecker) =>elem !== kingMoveResult.enemy)
+                if (kingMoveResult.enemy !== undefined) {
+                    newState = newState.filter((elem: IChecker) => elem !== kingMoveResult.enemy)
                 }
-                makeMove(NEW_GAME_MOVE,newState)
+                makeMove(NEW_GAME_MOVE, newState)
                 setCheckers(newState)
-                if(kingMoveResult.nextMove === false){nextPlayer()}
+                if (kingMoveResult.nextMove === false) { nextPlayer() }
             }
 
         }
     }
 
-    console.log(activeUser)
+    const onOkClick = async() => {
+        await RoomsApi.refreshRooms(activeUser.room.name)
+        setActiveUser({})
+        history.push('/')
+    }
+
+
     return (
-        <GlobalContext.Provider value={{ moved,setMoved }}>
-            <DragDropContext onDragEnd={onDragEnd}>
-                <div className="mx-auto d-flex justify-content-center">
-                    <div className="d-flex flex-column justify-content-between h-100 mx-2">
-                        {
-                            columns.map((number: string) => (<div className="d-flex align-items-center " style={{ height: '100px' }} key={'row' + number}>{number}</div>))
-                        }
-                    </div>
-                    <div>
-                        <div style={{ maxWidth: '802px', border: '1px solid black', boxSizing: 'border-box', margin: '0 auto ' }}>
-                            {
-                                columns.map(mapColumns)
-                            }
+        <GlobalContext.Provider value={{ moved, setMoved, activeUser }}>
+
+            <Modal
+                title="Basic Modal"
+                visible={visible}
+                onOk={onOkClick}
+            >   {
+                    checkers.filter((checker: IChecker) => checker.color === "white").length === 0 ?
+                        <h3 className="text-center">{activeUser.room && activeUser.room.player2} wins !!!</h3>
+                        :
+                        <h3 className="text-center">{activeUser.room && activeUser.room.player1} wins !!!</h3>
+                }
+
+            </Modal>
+            {
+                activeUser.room && activeUser.room.isbuzy === false ?
+                    <h1 className="text-center">Waiting for players</h1>
+                    :
+                    <DragDropContext onDragEnd={onDragEnd}>
+                        <div className="mx-auto d-flex justify-content-center">
+                            <div className="d-flex flex-column justify-content-between h-100 mx-2">
+                                {
+                                    columns.map((number: string) => (<div className="d-flex align-items-center " style={{ height: '100px' }} key={'row' + number}>{number}</div>))
+                                }
+                            </div>
+                            <div>
+                                <div style={{ maxWidth: '802px', border: '1px solid black', boxSizing: 'border-box', margin: '0 auto ' }}>
+                                    {
+                                        columns.map(mapColumns)
+                                    }
+                                </div>
+                                <div style={{ maxWidth: '802px', margin: '0 auto', display: "flex" }} >
+                                    {
+                                        rows.map((row: string) => (
+                                            <div key={row + Date.now()} style={{ width: "300px", textAlign: "center" }}>{row}</div>
+                                        ))
+                                    }
+                                </div>
+                            </div>
+                            <SideBar moved={moved} setMoved={setMoved} checkers={checkers} />
                         </div>
-                        <div style={{ maxWidth: '802px', margin: '0 auto', display: "flex" }} >
-                            {
-                                rows.map((row: string) => (
-                                    <div key={row + Date.now()} style={{ width: "300px", textAlign: "center" }}>{row}</div>
-                                ))
-                            }
-                        </div>
-                    </div>
-                    <SideBar moved={moved} setMoved={setMoved} checkers={checkers} />
-                </div>
-            </DragDropContext>
+                    </DragDropContext>
+            }
+
+
         </GlobalContext.Provider>
     )
 }

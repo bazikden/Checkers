@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRoom = exports.addRoom = exports.getRooms = void 0;
+exports.refreshRoom = exports.getRoom = exports.addRoom = exports.getRooms = void 0;
 var rooms_1 = __importDefault(require("../models/rooms"));
 var getRooms = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var rooms, error_1;
@@ -119,3 +119,26 @@ var getRoom = function (req, res) { return __awaiter(void 0, void 0, void 0, fun
     });
 }); };
 exports.getRoom = getRoom;
+var refreshRoom = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var name, error_4;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                name = req.body.name;
+                _a.label = 1;
+            case 1:
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, rooms_1.default.findOneAndUpdate({ name: name }, { player1: "none", player2: "none", isbuzy: false })];
+            case 2:
+                _a.sent();
+                res.json({ success: true });
+                return [3 /*break*/, 4];
+            case 3:
+                error_4 = _a.sent();
+                res.status(500).json({ error: error_4 });
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
+        }
+    });
+}); };
+exports.refreshRoom = refreshRoom;
