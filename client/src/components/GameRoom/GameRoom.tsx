@@ -16,7 +16,7 @@ export const GameRoom = ({activeUser,setActiveUser}:IProps) => {
     return (
         <div>
             {activeUser.player !== undefined && activeUser.player.name? activeUser.player.name :"PLAYER"}
-            <Board activeUser={activeUser} setActiveUser = {setActiveUser}/>
+            {activeUser.player &&<Board activeUser={activeUser} setActiveUser = {setActiveUser}/>}
         </div>
     )
 }

@@ -1,6 +1,7 @@
+import { useHistory } from 'react-router';
 import { useEffect, useRef } from "react";
 import socketIOClient from "socket.io-client";
-import { IChecker } from "./Sections/Board/Board";
+import { IChecker, reversedCheckers } from "./Sections/Board/Board";
 import { RoomsApi } from "../api/roomsApi";
 import { IActiveUser } from "../Home/Home";
 import { SOCKET_SERVER_URL } from "../../config/config";
@@ -42,7 +43,7 @@ const NEXT_PLAYER = "NEXT_PLAYER"
 
 const useGame = (roomId:string,setCheckers:Function,setMoved:Function,activeUser:IActiveUser,setActiveUser:Function) => {
   let socketRef:any = useRef()
-
+  const history = useHistory()
   useEffect(() => {
      socketRef.current = socketIOClient(SOCKET_SERVER_URL, {
       query: { roomId },
@@ -54,7 +55,10 @@ const useGame = (roomId:string,setCheckers:Function,setMoved:Function,activeUser
       setActiveUser((prevState:IActiveUser) => {return {...prevState,room}})
     })
     socketRef.current.on(NEW_GAME_MOVE, (checkers:any) => {
+      activeUser.player.name === activeUser.room.player1?
       setCheckers([...checkers.body])
+      :
+      setCheckers(reversedCheckers(checkers.body))
     });
 
     socketRef.current.on(NEXT_PLAYER,() => {
@@ -62,13 +66,14 @@ const useGame = (roomId:string,setCheckers:Function,setMoved:Function,activeUser
     })
 
     return () => {
+      console.log(`${socketRef.current.id} diconected`)
       socketRef.current.disconnect();
     };
   }, [roomId]);
 
   const makeMove:Function = (type:string,newCheckers:IChecker []) => {
     socketRef.current.emit(NEW_GAME_MOVE, {
-      body: newCheckers,
+      body: activeUser.player.name === activeUser.room.player1?newCheckers:reversedCheckers(newCheckers),
       senderId: socketRef.current.id,
     });
   };

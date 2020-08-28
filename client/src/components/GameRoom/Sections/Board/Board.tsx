@@ -20,7 +20,7 @@ export interface IChecker {
 interface IContext {
     moved: string,
     setMoved: Function,
-    activeUser: any
+    activeUser: IActiveUser | any
 }
 
 const NEW_GAME_MOVE = "NEW_GAME_MOVE";
@@ -57,6 +57,24 @@ const initialCheckers = [
 
 ]
 
+const calculateColumn = (column: string) => {
+    const newColumn: string = (8 - Number(column) + 1).toString()
+    return newColumn
+}
+
+const calculateRow = (row: string) => {
+    const newRow: string = rows[7 - rows.indexOf(row)]
+    return newRow
+}
+
+export const reversedCheckers = (checkers:IChecker[]) => checkers.map((checker: IChecker) => {
+    return {
+        ...checker,
+        column: calculateColumn(checker.column),
+        row: calculateRow(checker.row)
+    }
+})
+
 const getListStyle = (isDraggingOver: any) => ({
     width: 100
 });
@@ -75,20 +93,29 @@ export const Board = ({ activeUser, setActiveUser }: IProps) => {
     const [moved, setMoved] = useState<string>("white")
     const { makeMove, nextPlayer } = useGame(params.id, setCheckers, setMoved, activeUser, setActiveUser)
 
+    useEffect(() => {
+        !activeUser.player && history.push('/')
+    },[])
+
+    useEffect(()=>{
+        activeUser.player.name !== activeUser.room.player1 && setCheckers(reversedCheckers(checkers))
+    },[])
+    
 
     useEffect(() => {
         if (checkers.filter((checker: IChecker) => checker.color === "white").length === 0) setVisible(true)
         if (checkers.filter((checker: IChecker) => checker.color === "black").length === 0) setVisible(true)
+
     }, [checkers])
-    useEffect(()=>{
-        console.log("Active user",activeUser)
-        // activeUser == {} && history.push('/')
-    },[])
+
+
 
     const checkExists = (column: string, row: string) => {
-        return checkers.find((elem: IChecker) => elem.column === column && elem.row === row) === undefined ? false : true
+            return checkers.find((elem: IChecker) => elem.column === column && elem.row === row) === undefined ? false : true
+
     }
     let color = "black"
+
     const mapColumns = ((column: string) => {
         color = color === "black" ? "white" : "black"
         return (
@@ -135,13 +162,17 @@ export const Board = ({ activeUser, setActiveUser }: IProps) => {
             checkers,
             from,
             to,
-            color
+            color,
+            activeUser
         }
         const draggable = draggableId.split("-")
         const destinationArr = destination.droppableId.split("")
         const draggableElem = checkers.find((elem: IChecker) => elem.column === draggable[0] && elem.row === draggable[1] && elem.color === draggable[2])
+
+        
         const checkerMove = new Checker(options)
         const kingMove = new King(options)
+
 
 
         if (draggableElem?.status === "checker") {
@@ -149,7 +180,9 @@ export const Board = ({ activeUser, setActiveUser }: IProps) => {
             if (move === false) {
                 return
             } else {
+
                 const findChecker = checkers.find((elem: IChecker) => elem.column === destinationArr[0] && elem.row === destinationArr[1])
+
                 if (findChecker !== undefined) { return }
                 let newState = checkers.map((elem: IChecker) => {
                     if (elem.column === draggable[0] && elem.row === draggable[1] && elem.color === draggable[2]) {
@@ -194,7 +227,7 @@ export const Board = ({ activeUser, setActiveUser }: IProps) => {
         }
     }
 
-    const onOkClick = async() => {
+    const onOkClick = async () => {
         await RoomsApi.refreshRooms(activeUser.room.name)
         setActiveUser({})
         history.push('/')
@@ -205,7 +238,7 @@ export const Board = ({ activeUser, setActiveUser }: IProps) => {
         <GlobalContext.Provider value={{ moved, setMoved, activeUser }}>
 
             <Modal
-                title="Basic Modal"
+                title="Congratulations"
                 visible={visible}
                 onOk={onOkClick}
             >   {

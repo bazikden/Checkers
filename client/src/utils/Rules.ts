@@ -1,4 +1,5 @@
 import { IChecker } from './../components/GameRoom/Sections/Board/Board';
+import { IActiveUser } from '../components/Home/Home';
 
 
 const alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
@@ -8,6 +9,7 @@ interface IOptions {
     from: string,
     to: string,
     color: string
+    activeUser: IActiveUser
 }
 
 
@@ -23,6 +25,7 @@ export class Checker {
     toY: number
     fromXIndex: number
     toXIndex: number
+    activeUser: IActiveUser
     constructor(options: IOptions) {
         this.checkers = options.checkers
         this.from = options.from
@@ -34,6 +37,7 @@ export class Checker {
         this.toX = options.to.charAt(1)
         this.fromXIndex = alphabet.indexOf(this.fromX)
         this.toXIndex = alphabet.indexOf(this.toX)
+        this.activeUser = options.activeUser
     }
 
     makeMove() {
@@ -131,7 +135,8 @@ export class Checker {
     }
 
     checkMoveForward() {
-        if (this.color === "white") {
+        const color:string = this.activeUser.player.name === this.activeUser.room.player1 ? "white": "black"
+        if (this.color === color) {
             if (this.fromY < this.toY) {
                 return true
             } else { return false }
@@ -142,7 +147,8 @@ export class Checker {
         }
     }
     checkMakeKing() {
-        if (this.color === "white") {
+        const color:string = this.activeUser.player.name === this.activeUser.room.player1 ? "white": "black"
+        if (this.color === color) {
             if (this.toY === 1) {
                 return true
             } else {

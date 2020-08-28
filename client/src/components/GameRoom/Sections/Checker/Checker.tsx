@@ -62,8 +62,8 @@ const checkDisableChecker = (moved:string,color:string,activeUser:IActiveUser) =
     if(moved !== color){
         return true
     }
-    if(activeUser.player.name === activeUser.room.player1 && color ==="black") return true
-    if(activeUser.player.name === activeUser.room.player2 && color ==="white") return true
+    if(activeUser.player && activeUser.player.name === activeUser.room.player1 && color ==="black") return true
+    if(activeUser.player && activeUser.player.name === activeUser.room.player2 && color ==="white") return true
     return false
     
 }
@@ -76,7 +76,6 @@ export const Checker = ({ column, row, color, status }: IChecker) => {
             draggableId={`${column}-${row}-${color}`}
             index={0}
             isDragDisabled={checkDisableChecker(moved,color,activeUser)}
-            // isDragDisabled={moved !== color  ? true : false}
         >
             {(provided, snapshot) => (
                 <div
