@@ -38,7 +38,7 @@ export const Rooms = ({ activeUser, setActiveUser, chooseRoom ,rooms }: IProps) 
     }
 
     const onAddRoomClick = async () => {
-        const response = await RoomsApi.addRoom(rooms.length, activeUser.player.name)
+        await RoomsApi.addRoom(rooms.length, activeUser.player.name)
 
     }
 

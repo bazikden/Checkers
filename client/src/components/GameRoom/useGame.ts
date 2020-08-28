@@ -1,4 +1,3 @@
-import { useHistory } from 'react-router';
 import { useEffect, useRef } from "react";
 import socketIOClient from "socket.io-client";
 import { IChecker, reversedCheckers } from "./Sections/Board/Board";
@@ -7,34 +6,6 @@ import { IActiveUser } from "../Home/Home";
 import { SOCKET_SERVER_URL } from "../../config/config";
 
 
-// const initialCheckers = [
-//   { column: '1', row: 'b', color: 'black', status: "checker" },
-//   { column: '1', row: 'd', color: 'black', status: "checker" },
-//   { column: '1', row: 'f', color: 'black', status: "checker" },
-//   { column: '2', row: 'a', color: 'black', status: "checker" },
-//   { column: '1', row: 'h', color: 'black', status: "checker" },
-//   { column: '2', row: 'c', color: 'black', status: "checker" },
-//   { column: '2', row: 'e', color: 'black', status: "checker" },
-//   { column: '2', row: 'g', color: 'black', status: "checker" },
-//   { column: '3', row: 'b', color: 'black', status: "checker" },
-//   { column: '3', row: 'd', color: 'black', status: "king" },
-//   { column: '3', row: 'f', color: 'black', status: "checker" },
-//   { column: '3', row: 'h', color: 'black', status: "checker" },
-
-//   { column: '6', row: 'a', color: 'white', status: "king" },
-//   { column: '6', row: 'c', color: 'white', status: "checker" },
-//   { column: '6', row: 'e', color: 'white', status: "king" },
-//   { column: '6', row: 'g', color: 'white', status: "checker" },
-//   { column: '7', row: 'b', color: 'white', status: "checker" },
-//   { column: '7', row: 'd', color: 'white', status: "checker" },
-//   { column: '7', row: 'f', color: 'white', status: "checker" },
-//   { column: '7', row: 'h', color: 'white', status: "checker" },
-//   { column: '8', row: 'a', color: 'white', status: "checker" },
-//   { column: '8', row: 'c', color: 'white', status: "checker" },
-//   { column: '8', row: 'e', color: 'white', status: "checker" },
-//   { column: '8', row: 'g', color: 'white', status: "checker" },
-
-// ]
 
 const NEW_GAME_MOVE = "NEW_GAME_MOVE";
 const NEW_CLIENT_CONNECTED =  "NEW_CLIENT_CONNECTED"
@@ -43,7 +14,6 @@ const NEXT_PLAYER = "NEXT_PLAYER"
 
 const useGame = (roomId:string,setCheckers:Function,setMoved:Function,activeUser:IActiveUser,setActiveUser:Function) => {
   let socketRef:any = useRef()
-  const history = useHistory()
   useEffect(() => {
      socketRef.current = socketIOClient(SOCKET_SERVER_URL, {
       query: { roomId },

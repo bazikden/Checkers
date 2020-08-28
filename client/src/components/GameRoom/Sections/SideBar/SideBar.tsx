@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { IChecker, GlobalContext } from '../Board/Board'
 import { Timer } from './Sections/Timer'
-import { IActiveUser } from '../../../Home/Home'
+
 
 interface IProps {
     moved: string

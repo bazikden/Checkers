@@ -95,11 +95,11 @@ export const Board = ({ activeUser, setActiveUser }: IProps) => {
 
     useEffect(() => {
         !activeUser.player && history.push('/')
-    },[])
+    },[activeUser.player, history])
 
     useEffect(()=>{
-        activeUser.player.name !== activeUser.room.player1 && setCheckers(reversedCheckers(checkers))
-    },[])
+        activeUser.player.name !== activeUser.room.player1 && setCheckers(prevState => {return reversedCheckers(prevState)})
+    },[activeUser.player.name, activeUser.room.player1])
     
 
     useEffect(() => {
